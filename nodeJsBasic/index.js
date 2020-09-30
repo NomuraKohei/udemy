@@ -1,12 +1,11 @@
-const parent = function () {
-    console.log("1");
-    child();
-    console.log("2");
-};
+const fs = require("fs");
+const path = require("path");
+const iconv = require("iconv-lite");
 
-const child = function () {
-    console.log("3");
-    console.log("4");
-};
-
-parent();
+const reader = fs.createReadStream(path.join(__dirname, "sample.txt"));
+const decoder = iconv.decodeStream("shiftjis");
+reader.pipe(decoder);
+decoder.on("data", (chunk) => {
+    console.log(chunk);
+});
+reader.resume();
