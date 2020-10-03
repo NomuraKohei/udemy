@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/nodeJsBasic/getRequest.js",
+            "program": "${workspaceFolder}/nodeJsExpress/app.js",
             "outputCapture": "std"
         }
 
