@@ -1,146 +1,198 @@
-// Code goes here!
-type Admin = {
-    name: string;
-    priviledges: string[];
-}
-
-type Employee = {
-    name: string;
-    startDate: Date;
-}
-
-//nterface ElevatedEmployee extends Employee, Admin {}
-
-type ElevatedEmployee = Admin & Employee;
-
-const e1: ElevatedEmployee = {
-    name: 'Max',
-    priviledges: ['create-server'],
-    startDate: new Date(),
-}
-
-type Combinable = string | number;
-type Numeric = number | boolean;
-
-
-type Universal = Combinable & Numeric;
-
-function add(a: number, b: number): number;
-function add(a: string, b: number): string;
-function add(a: string, b:string): string;
-function add(a: number, b:string): string;
-function add(a: Combinable, b: Combinable) {
-    if (typeof a === 'string' || typeof b === 'string') {
-        return a.toString() + b.toString();
-    }
-    return a + b;
-}
-
-const result = add('Hello', 'TypeScript');
-result.split(' ');
-
-const fetchUserData = {
-    id: 'u1',
-    name: 'user1',
-    job: {
-        title: 'Developer',
-        descriptopm: 'TypeScript',
-    }
-};
-
-console.log(fetchUserData?.job?.title);
-
-const userInput2 = '';
-
-const storedData = userInput2 ?? 'DEFAULT'; // nullかundefinedだった場合はDEFAULT
-
-console.log(storedData);
-
-/* 
-type UnknownEmployee = Employee | Admin;
-
-function printEmployeeInformation(emp: UnknownEmployee) {
-    console.log(emp.name);
-    if('priviledges' in emp){
-        console.log("Priviledges: " + emp.priviledges);
-    }
-    if('startDate' in emp){
-        console.log('Start Date: ' + emp.startDate);
+function Logger(logString: string) {
+    console.log("Loggerファクトリ");
+    return function(constructor: Function) {
+        console.log(logString);
+        console.log(constructor);
     }
 }
 
-printEmployeeInformation({ name: 'Menu', startDate: new Date()});
+function WithTemplate(template: string, hookId: string) {
+    console.log("Templateファクトリ");
+    return function<T extends {new(...args: any[]): {name: string}}>(originalConstructor: T) {
+        return class extends originalConstructor {
+            constructor(..._: any[]) {
+                super();
+                console.log('テンプレートを表示');
+                const hookEl = document.getElementById(hookId);
+                if(hookEl) {
+                    hookEl.innerHTML = template;
+                    hookEl.querySelector('h1')!.textContent = this.name;
+                }
+                
+            }
+        }
+    };
+}
 
-class Car {
-    drive() {
-        console.log("運転中...");
+@Logger("ログ出力中")
+@WithTemplate("<h1>Personオブジェクト</h1>", "app")
+class Person {
+    name = 'Max';
+
+    constructor() {
+        console.log("Personオブジェクトを作成中...");
     }
 }
 
-class Truck {
-    drive() {
-        console.log("トラックを運転中...");
+const pers = new Person();
+
+console.log(pers);
+
+// ---
+
+function Log(target: any, propertyName: string | Symbol) {
+    console.log("Property デコレータ");
+    console.log(target, propertyName);
+}
+
+function Log2(target: any, name: string, descriptor: PropertyDescriptor) {
+    console.log("Accessor デコレータ");
+    console.log(target);
+    console.log(name);
+    console.log(descriptor);
+}
+
+function Log3(target: any, name: string | Symbol, descriptor: PropertyDescriptor) {
+    console.log("Method デコレータ");
+    console.log(target);
+    console.log(name);
+    console.log(descriptor);
+}
+
+function Log4(target: any, name: string | Symbol, position: number){
+    console.log("パラメータ デコレータ");
+    console.log(target);
+    console.log(name);
+    console.log(position);
+
+}
+class Product {
+    @Log //定義されたときにデコレータは実行される
+    title: string;
+    private _price: number;
+
+    @Log2
+    set price(val: number) {
+        if(val > 0) {
+            this._price = val;
+        } else {
+            throw new Error('不正な価格です - 0以下は設定できません')
+        }
+        this._price = val;
     }
 
-    loadCargo(amount: number) {
-        console.log("荷物を載せています..." + amount);
+    constructor(t: string, p: number){
+        this.title = t;
+        this._price = p;
+    }
+
+    @Log3
+    getPriceWithTax(@Log4 tax: number) {
+        return this._price * (1 + tax);
     }
 }
 
-type Vehicle = Car | Truck;
+const p1 = new Product("Book", 100);
+const p2 = new Product("Book2", 100);
 
-const v1 = new Car();
-const v2 = new Truck();
+function AutoBind(_: any, _2: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    const adjDescriptor: PropertyDescriptor = {
+        configurable: true,
+        enumerable: false,
+        get() {
+            const boundFn = originalMethod.bind(this);
+            return boundFn;
+        }
+    }
+    return adjDescriptor;
+}
 
-function useVehicle(vehicle: Vehicle) {
-    vehicle.drive();
-    if(vehicle instanceof Truck) {
-        vehicle.loadCargo(1000);
+class Printer {
+    message = 'クリックしました！';
+
+    @AutoBind
+    showMessage() {
+        console.log(this.message);
     }
 }
 
-useVehicle(v1);
-useVehicle(v2);
+const p = new Printer();
 
-interface Bird {
-    type: 'bird',
-    flyingSpeed: number;
-}
+const button = document.querySelector("button")!;
+button.addEventListener('click', p.showMessage);
 
-interface Horse {
-    type: 'horse',
-    runningSpeed: number;
-}
+// ---
 
-type Animal = Bird | Horse;
-
-function moveAnimal(animal: Animal) {
-    let speed;
-    switch (animal.type) {
-        case 'bird':
-            speed = animal.flyingSpeed;
-            break;
-        case 'horse':
-            speed = animal.runningSpeed;
-            break;
+interface ValidatorConfig {
+    [prop: string]: {
+        [ValidatableProp: string]: string[] // ['required', 'positive']
     }
-    console.log('移動速度 ' + speed);
 }
 
-moveAnimal({type: 'bird', flyingSpeed: 10});
+const registoredValidators: ValidatorConfig = {};
 
-//const userInputElement = <HTMLInputElement>document.getElementById("user-input")!;
-const userInputElement = document.getElementById("user-input");
-
-if(userInputElement) {
-    (userInputElement as HTMLInputElement).value = 'こんにちは';
+function Required(target: any, propName: string) {
+    registoredValidators[target.constructor.name] = {
+        ...registoredValidators[target.constructor.name],
+        [propName]: ['required'],
+    }
 }
 
-interface ErrorContainer { // { email: '正しいメールアドレスではありません', username: 'ユーザ名に記号を含めることが出来ません'}
-    [prop: string]: string;
+function PositiveNumber(target: any, propName: string) {
+    registoredValidators[target.constructor.name] = {
+        ...registoredValidators[target.constructor.name],
+        [propName]: ['positive'],
+    }
+
 }
 
-const errorBag: ErrorContainer = {
-    email: '正しいメールアドレスではありません',
-    username: 'ユーザ名に記号を含めることが出来ません',
-} */
+let isValid = true;
+function Validate(obj: any) {
+    const objValidatorConfig = registoredValidators[obj.constructor.name];
+    if (!objValidatorConfig) {
+        return true;
+    }
+    for (const prop in objValidatorConfig) {
+        for (const validator of objValidatorConfig[prop]) {
+            switch (validator) {
+                case 'required':
+                    isValid = isValid && !!obj[prop];
+                    break;
+                case 'positive':
+                    isValid = isValid && obj[prop] > 0;
+                    break;
+            }
+        }
+    }
+    return isValid;
+}
+class Course {
+    @Required
+    title: string;
+    @PositiveNumber
+    price: number;
+
+    constructor(t: string, p:number) {
+        this.title = t;
+        this.price = p;
+    }
+}
+
+const courseForm = document.querySelector('form')!;
+courseForm.addEventListener('submit', event =>{
+    event.preventDefault();
+    const titleEl = document.getElementById('title') as HTMLInputElement;
+    const priceEl = document.getElementById('price') as HTMLInputElement;
+
+    const title = titleEl.value;
+    const price = +priceEl.value;
+
+    const createdCourse = new Course(title, price);
+
+    if(!Validate(createdCourse)) {
+        alert('正しく入力してください！');
+        return;
+    }
+    console.log(createdCourse);
+});
