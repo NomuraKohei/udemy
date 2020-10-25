@@ -1,6 +1,6 @@
-namespace App {
   // Component Class
-  export abstract class Component<
+  
+  export default abstract class Component<
     T extends HTMLElement,
     U extends HTMLElement
   > {
@@ -41,4 +41,3 @@ namespace App {
       );
     }
   }
-}

@@ -1,4 +1,6 @@
-namespace App {
+import { Project, ProjectStatus } from '../models/project.js'  
+
+  
   // Project state management
   type Listner<T> = (items: T[]) => void;
 
@@ -53,5 +55,6 @@ namespace App {
     }
   }
 
+  console.log("実行中・・・");
+
   export const projectState = ProjectState.getInstance();
-}
