@@ -1,60 +1,57 @@
-import { Project, ProjectStatus } from '../models/project.js'  
+import { Project, ProjectStatus } from '../models/project';
 
-  
-  // Project state management
-  type Listner<T> = (items: T[]) => void;
+// Project State Management
+type Listener<T> = (items: T[]) => void;
 
-  class State<T> {
-    protected listners: Listner<T>[] = [];
+class State<T> {
+  protected listeners: Listener<T>[] = [];
 
-    addListner(lisrnerFn: Listner<T>) {
-      this.listners.push(lisrnerFn);
-    }
+  addListener(listenerFn: Listener<T>) {
+    this.listeners.push(listenerFn);
+  }
+}
+
+export class ProjectState extends State<Project> {
+  private projects: Project[] = [];
+  private static instance: ProjectState;
+
+  private constructor() {
+    super();
   }
 
-  export class ProjectState extends State<Project> {
-    private projects: Project[] = [];
-    private static instance: ProjectState;
-
-    private constructor() {
-      super();
-    }
-
-    static getInstance() {
-      if (this.instance) {
-        return this.instance;
-      }
-      this.instance = new ProjectState();
+  static getInstance() {
+    if (this.instance) {
       return this.instance;
     }
+    this.instance = new ProjectState();
+    return this.instance;
+  }
 
-    addProject(title: string, description: string, manday: number) {
-      const newProject = new Project(
-        Math.random().toString(),
-        title,
-        description,
-        manday,
-        ProjectStatus.Active
-      );
-      this.projects.push(newProject);
-      this.updateListners();
-    }
+  addProject(title: string, description: string, manday: number) {
+    const newProject = new Project(
+      Math.random().toString(),
+      title,
+      description,
+      manday,
+      ProjectStatus.Active,
+    );
+    this.projects.push(newProject);
+    this.updateListeners();
+  }
 
-    moveProject(projectId: string, newStatus: ProjectStatus) {
-      const project = this.projects.find((prj) => prj.id === projectId);
-      if (project && project.status !== newStatus) {
-        project.status = newStatus;
-        this.updateListners();
-      }
-    }
-
-    private updateListners() {
-      for (const listnerFn of this.listners) {
-        listnerFn(this.projects.slice());
-      }
+  moveProject(projectId: string, newStatus: ProjectStatus) {
+    const project = this.projects.find(prj => prj.id === projectId);
+    if (project && project.status !== newStatus) {
+      project.status = newStatus;
+      this.updateListeners();
     }
   }
 
-  console.log("実行中・・・");
+  private updateListeners() {
+    for (const listenerFn of this.listeners) {
+      listenerFn(this.projects.slice());
+    }
+  }
+}
 
-  export const projectState = ProjectState.getInstance();
+export const projectState = ProjectState.getInstance();
