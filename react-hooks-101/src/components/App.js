@@ -1,5 +1,7 @@
 import React, { useReducer, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'
+
+import Event from './Event'
 import reducer from '../reducers'
 
 const App = () => {
@@ -12,14 +14,11 @@ const App = () => {
     dispatch ({
       type: 'CREATE_EVENT',
       title,
-      body 
+      body,
     })
-
     setTitle('')
     setBody('')
   }
-
-  console.log({state})
 
   return (
     <div className="container-fluid">
@@ -31,7 +30,7 @@ const App = () => {
         </div>
         <div className="form-group">
           <label htmlFor="formEventBody">ボディ</label>
-          <textarea className="form-control" id="formEventBody" value={body} onChange={ (e) => { setBody(e.target.body) } } />
+          <textarea className="form-control" id="formEventBody" value={body} onChange={ e => { setBody(e.target.value)}} />
         </div>
 
         <button className="btn btn-primary" onClick={addEvent}>イベントを作成する</button>
@@ -49,7 +48,7 @@ const App = () => {
           </tr>
         </thead>
         <tbody>
-
+          { state.map((event, index) => (<Event key={index} event={event} dispatch={dispatch}/>))}
         </tbody>
       </table>
     </div>
