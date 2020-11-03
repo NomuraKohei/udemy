@@ -30,12 +30,13 @@ const EventForm = () => {
         e.preventDefault()
         const result = window.confirm('全てのイベントを本当に削除しても良いですか？')
         if(result) {
-            dispatch({ type: DELETE_ALL_EVENTS})}
+            dispatch({ type: DELETE_ALL_EVENTS})
             dispatch({
                 type: ADD_OPERATION_LOG,
                 description: '全てのイベントを削除しました',
                 operatedAt: timeCurrentIso8601()
             })
+        }
     }
     
     const unCreatable = title === '' || body === ''
